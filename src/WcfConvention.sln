@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.23107.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "WcfConvention", "WcfConvention\WcfConvention.fsproj", "{75CC8D8D-8B22-4CCE-B64C-E6ED2E96F43E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test", "Test\Test.csproj", "{8AD36C61-D668-4658-A80E-BCA4C7EA12B4}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{75CC8D8D-8B22-4CCE-B64C-E6ED2E96F43E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{75CC8D8D-8B22-4CCE-B64C-E6ED2E96F43E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{75CC8D8D-8B22-4CCE-B64C-E6ED2E96F43E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{75CC8D8D-8B22-4CCE-B64C-E6ED2E96F43E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8AD36C61-D668-4658-A80E-BCA4C7EA12B4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8AD36C61-D668-4658-A80E-BCA4C7EA12B4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8AD36C61-D668-4658-A80E-BCA4C7EA12B4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8AD36C61-D668-4658-A80E-BCA4C7EA12B4}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
