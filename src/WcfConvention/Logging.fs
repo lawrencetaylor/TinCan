@@ -7,9 +7,8 @@ module Logging =
     type LogLevel = Trace | Error
 
     type IWcfConventionLogger = 
-        abstract member Log : LogLevel -> string -> obj[] -> unit
-        abstract member LogException : LogLevel -> Exception -> string -> obj[] -> unit
         abstract member ApplicationFault : string -> Exception option -> unit
+        abstract member LibraryDiagnostic : string -> unit
 
     type NullLogger private() = 
 
@@ -18,10 +17,9 @@ module Logging =
         
         interface IWcfConventionLogger with
             member x.ApplicationFault(message)(ex) = ()
-            member x.Log (level)(formatString)(formatParameters) = ()
-            member x.LogException (level)(ex)(formatString)(formatParameters) = ()
+            member x.LibraryDiagnostic(message) = ()
 
-    type ConsoleLogger() = 
+    type ConsoleLogger private() = 
 
         //Determine colour of console output based on Log Level
         let getConsoleColour logLevel = match logLevel with
@@ -29,18 +27,19 @@ module Logging =
                                             | Error  -> ConsoleColor.Red
 
         //Determine the message to output
-        let getMessage formatString formatParameters ex = 
-            String.Format(formatString, formatParameters)
+        let getMessage (message : string) ( ex : Exception option) = message
 
         //Log to Console
-        let log level formatString formatParameters (ex : Exception option) = 
+        let log level message (ex : Exception option) = 
             do (Console.ForegroundColor = getConsoleColour level) |> ignore
-            do Console.WriteLine (getMessage formatString formatParameters ex)
+            do Console.WriteLine (getMessage message ex)
             do (Console.ResetColor) |> ignore
 
+        static let instance = new ConsoleLogger()
+        static member Instance = instance
+
         interface IWcfConventionLogger with
-            member x.ApplicationFault(message)(ex) = log Error message null ex
-            member x.Log (level)(formatString)(formatParameters) = log level formatString formatParameters None
-            member x.LogException (level)(ex)(formatString)(formatParameters) = log level formatString formatParameters (Some(ex))
+            member x.ApplicationFault(message)(ex) = log Error message ex
+            member x.LibraryDiagnostic(message) = log Trace message None
 
 

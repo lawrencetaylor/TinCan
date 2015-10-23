@@ -9,47 +9,60 @@ open ServiceLogging
 open ServerExtensibility
 open ServiceConstruction
 
+type ServiceEndpoint with
+    member x.AddBehaviour (behaviour : 'a) = let matchingBehaviour = x.Behaviors.Find<'a>()
+                                             match box matchingBehaviour with
+                                                        | null -> 
+                                                                x.Behaviors.Add(behaviour)
+                                                                behaviour
+                                                        | _ -> matchingBehaviour
 
-type Server2(serviceType: Type, config : ServiceConfig,  [<ParamArray>] baseAddresses : Uri[]) as server =
+    member x.AddConstructingBehavior(config: ServiceConfig) = match config.ServiceConstructor with
+                                                                | Some serviceConstructor -> x.AddBehaviour(ConstructingBehaviour(serviceConstructor)) |> ignore
+                                                                                             x
+                                                                | None -> x
+
+type ServiceHost with
+    member x.AddBehaviour (behaviour : 'a) = let matchingBehaviour = x.Description.Behaviors.Find<'a>()
+                                             match box matchingBehaviour with
+                                                        | null -> 
+                                                                x.Description.Behaviors.Add(behaviour)
+                                                                behaviour
+                                                        | _ -> matchingBehaviour
+
+
+type Host(serviceType: Type, config : ServiceConfig,  [<ParamArray>] baseAddresses : Uri[]) as server =
     inherit ServiceHost(serviceType, baseAddresses) 
 
     let segmentDelimiter = '/'
+    let logger = ConsoleLogger.Instance :> IWcfConventionLogger
     let serviceType = serviceType
     let binding = config.GetBinding()
 
-    let segmentsByConvention (serviceContract : Type) = (ServiceContract(serviceContract) :> IServiceContract).Name.Split('.') 
-                                                            |> Seq.map(fun segment -> segment.TrimStart(segmentDelimiter).TrimEnd(segmentDelimiter))
-    let joinSegments (segments : seq<string>) = String.Join(segmentDelimiter.ToString(), segments)
+    let relativeAddressByConvention (serviceContract : Type) = let segments = (ServiceContract(serviceContract) :> IServiceContract).Name.Split('.') 
+                                                                                |> Seq.map(fun segment -> segment.TrimStart(segmentDelimiter).TrimEnd(segmentDelimiter))
+                                                               String.Join(segmentDelimiter.ToString(), segments)
     
-    let addBehaviour (behvaviourFactory : unit -> 'a) = match box (server.Description.Behaviors.Find<'a>()) with
-                                                        | null -> server.Description.Behaviors.Add(behvaviourFactory())
-                                                        | _ -> ()
-
-    let addEndpoint (serviceContract : Type) (relativeAddress : string) = server.AddServiceEndpoint(serviceContract, binding, relativeAddress)  |> ignore
 
 
-    member val Logger = NullLogger.Instance with get, set
+    let addEndpoint (serviceContract : Type) = 
+                                                let relativeAddress =  serviceContract |> relativeAddressByConvention
+                                                logger.LibraryDiagnostic (sprintf "Service contract %s has relative endpoint %s" (serviceContract.ToString()) relativeAddress )
+                                                server.AddServiceEndpoint(serviceContract, binding, relativeAddress)
+
+    let addConstructingBehavior (ep : ServiceEndpoint) = ep.AddConstructingBehavior(config)
+
+    member val Logger : IWcfConventionLogger = logger with get, set
 
     override x.InitializeRuntime() = 
 
-        addBehaviour |> (fun unit -> LogErrorsBehaviour(x.Logger)) |> ignore
-        addBehaviour |> (fun unit -> ServiceMetadataBehavior()) |> ignore
-
-        match config.ServiceConstructor with
-            | Some serviceConstructor -> addBehaviour |> (fun unit -> ConstructingBehaviour(serviceConstructor)) |> ignore
-            | _ -> ()
+        LogErrorsBehaviour(x.Logger) |> server.AddBehaviour  |> ignore
+        ServiceMetadataBehavior() |> server.AddBehaviour |> ignore
+        (ServiceDebugBehavior() |> server.AddBehaviour).IncludeExceptionDetailInFaults <- config.IsDebug
 
         serviceType |> ContractHelpers.getServiceContracts
-                            |> Seq.map(fun t -> let relativeAddress = t |> (segmentsByConvention >> joinSegments)
-                                                addEndpoint t relativeAddress )
-                            |> ignore
+                    |> Seq.map(addEndpoint >> addConstructingBehavior)
+                    |> Seq.iter ignore
 
-        let serviceDebugBehaviour = addBehaviour |> (fun unit -> ServiceDebugBehavior())
-        serviceDebugBehaviour.IncludeExceptionDetailInFaults <- config.IsDebug
-
-                
-
-        
-        
         base.InitializeRuntime()
 
