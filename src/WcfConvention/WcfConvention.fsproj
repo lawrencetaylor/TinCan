@@ -53,6 +53,8 @@
   <ItemGroup>
     <Compile Include="AssemblyInfo.fs" />
     <Compile Include="Logging.fs" />
+    <Compile Include="ServiceLogging.fs" />
+    <Compile Include="ServiceConstruction.fs" />
     <Compile Include="ContractHelpers.fs" />
     <Compile Include="ServerExtensibility.fs" />
     <Compile Include="Server.fs" />
@@ -73,13 +75,7 @@
     <Reference Include="System.ServiceModel.Internals">
       <HintPath>..\..\..\..\Windows\Microsoft.NET\Framework\v4.0.30319\System.ServiceModel.Internals.dll</HintPath>
     </Reference>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Test\Test.csproj">
-      <Name>Test</Name>
-      <Project>{8ad36c61-d668-4658-a80e-bca4c7ea12b4}</Project>
-      <Private>True</Private>
-    </ProjectReference>
+    <Reference Include="System.Xml" />
   </ItemGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
