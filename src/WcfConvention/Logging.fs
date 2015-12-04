@@ -1,5 +1,8 @@
-﻿namespace WcfConvention
+﻿namespace TinCan
 
+/// <summary>
+/// Concerns internal library logging
+/// </summary>
 module Logging = 
 
     open System
@@ -10,6 +13,9 @@ module Logging =
         abstract member ApplicationFault : string -> Exception option -> unit
         abstract member LibraryDiagnostic : string -> unit
 
+    /// <summary>
+    /// Null implementation of a logger
+    /// </summary>
     type NullLogger private() = 
 
         static let instance = new NullLogger()
@@ -19,17 +25,17 @@ module Logging =
             member x.ApplicationFault(message)(ex) = ()
             member x.LibraryDiagnostic(message) = ()
 
+    /// <summary>
+    /// Logs to the console output
+    /// </summary>
     type ConsoleLogger private() = 
 
-        //Determine colour of console output based on Log Level
         let getConsoleColour logLevel = match logLevel with
                                             | Trace -> ConsoleColor.Gray
                                             | Error  -> ConsoleColor.Red
 
-        //Determine the message to output
         let getMessage (message : string) ( ex : Exception option) = message
 
-        //Log to Console
         let log level message (ex : Exception option) = 
             do (Console.ForegroundColor = getConsoleColour level) |> ignore
             do Console.WriteLine (getMessage message ex)

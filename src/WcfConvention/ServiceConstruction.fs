@@ -1,9 +1,14 @@
-﻿module ServiceConstruction
+﻿namespace TinCan
+
+module ServiceConstruction =
 
     open System
     open System.ServiceModel.Description
     open System.ServiceModel.Dispatcher
 
+    /// <summary>
+    /// Instance of IInstanceProvider that allows you to specifiy a factory method for creating the service instance
+    /// </summary>
     type ConstructingBehaviour(serviceFactory: unit -> obj) =
         member x.Add z y = z + y 
         interface IInstanceProvider with
